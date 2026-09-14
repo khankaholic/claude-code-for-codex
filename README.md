@@ -14,16 +14,29 @@ Early local plugin prototype. The companion runtime supports:
 - deferred `AskUserQuestion` handling and exact-session resume
 - status, result, cancellation, and estimated usage reporting
 
+## Install into Codex
+
+Add this repository as a Codex marketplace and install the plugin:
+
+```bash
+codex plugin marketplace add khankaholic/claude-code-for-codex
+codex plugin add claude-code-for-codex@claude-code-for-codex
+```
+
+Start a new Codex session, then run `$cc-setup`. The setup skill verifies Claude Code and offers to install the plugin's pinned local SDK dependency if needed. It never performs Claude authentication for you.
+
+See [the human installation guide](docs/INSTALL.md) for prerequisites, updating, uninstalling, and troubleshooting. Agents installing this plugin into Codex should follow [the agent installation contract](docs/INSTALL_AGENT.md).
+
 ## Requirements
 
 - Node.js 20 or later
 - Claude Code 2.1.259 or later
 - a Claude.ai subscription login or supported Anthropic provider authentication
 
-Install dependencies and check the runtime:
+For source development, install dependencies and check the runtime:
 
 ```bash
-npm install
+npm ci
 npm run setup
 ```
 

@@ -1,6 +1,6 @@
 {
   "name": "claude-code-for-codex",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Use a locally installed Claude Code runtime from Codex for reviews, delegated tasks, and resumable second opinions.",
   "author": {
     "name": "khankaholic",

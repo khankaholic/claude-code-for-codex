@@ -24,7 +24,7 @@ Paste this into Codex:
 
 ```text
 Fetch and follow the installation instructions from:
-https://raw.githubusercontent.com/khankaholic/claude-code-for-codex/refs/heads/main/docs/INSTALL_AGENT.md
+https://raw.githubusercontent.com/khankaholic/claude-code-for-codex/main/docs/INSTALL_AGENT.md
 ```
 
 Codex will install the marketplace and plugin, prepare the pinned runtime dependency, verify the installation, and tell you if a human authentication step is required.

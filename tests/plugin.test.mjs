@@ -39,7 +39,7 @@ test("installation guides target Codex instead of Claude Code plugins", () => {
 test("README provides a fetchable Codex agent bootstrap", () => {
   const content = fs.readFileSync(path.join(root, "README.md"), "utf8");
   assert.match(content, /Paste this into Codex:/);
-  assert.match(content, /https:\/\/raw\.githubusercontent\.com\/khankaholic\/claude-code-for-codex\/refs\/heads\/main\/docs\/INSTALL_AGENT\.md/);
+  assert.match(content, /https:\/\/raw\.githubusercontent\.com\/khankaholic\/claude-code-for-codex\/main\/docs\/INSTALL_AGENT\.md/);
 });
 
 test("every skill has matching frontmatter and no placeholders", () => {

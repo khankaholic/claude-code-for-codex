@@ -1,6 +1,6 @@
-# Agent installation contract
+# Install Claude Code for Codex with an agent
 
-Use this procedure when a user asks an agent to install this repository as a Codex plugin.
+These instructions are designed to be fetched and followed by Codex when a user asks it to install this repository. Complete the installation autonomously until a human-only action is required.
 
 ## Boundaries
 
@@ -39,13 +39,13 @@ Use this procedure when a user asks an agent to install this repository as a Cod
    node <plugin-root>/scripts/install.mjs --check --json
    ```
 
-6. If and only if the report says `agentSdk.available` is false, tell the user that the plugin needs its pinned local npm dependency. After the user approves, run:
+6. If and only if the report says `agentSdk.available` is false, install the plugin's pinned local npm dependency:
 
    ```bash
    node <plugin-root>/scripts/install.mjs --install --json
    ```
 
-7. Run the check again. If `auth.loggedIn` is false, ask the user to run `claude auth login` in their own terminal, then rerun the check after they confirm.
+7. Run the check again. If `auth.loggedIn` is false, pause and ask the user to run `claude auth login` in their own terminal. Rerun the check after they confirm. This is the only expected human-only installation step.
 8. Report the verified component statuses and tell the user to start a new Codex session. Do not claim the skills are loaded in the current session.
 
 ## Success criteria

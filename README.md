@@ -4,7 +4,7 @@ Use Claude Code from inside Codex for reviews, second opinions, implementation w
 
 ## Status
 
-Early local plugin prototype. The companion runtime supports:
+Early plugin release. The companion runtime supports:
 
 - Claude Code installation and authentication checks
 - foreground and background jobs
@@ -14,7 +14,22 @@ Early local plugin prototype. The companion runtime supports:
 - deferred `AskUserQuestion` handling and exact-session resume
 - status, result, cancellation, and estimated usage reporting
 
-## Install into Codex
+## Installation
+
+This plugin installs into Codex and uses your local Claude Code runtime.
+
+### Let Codex install it
+
+Paste this into Codex:
+
+```text
+Fetch and follow the installation instructions from:
+https://raw.githubusercontent.com/khankaholic/claude-code-for-codex/refs/heads/main/docs/INSTALL_AGENT.md
+```
+
+Codex will install the marketplace and plugin, prepare the pinned runtime dependency, verify the installation, and tell you if a human authentication step is required.
+
+### Install it manually
 
 Add this repository as a Codex marketplace and install the plugin:
 
@@ -25,7 +40,7 @@ codex plugin add claude-code-for-codex@claude-code-for-codex
 
 Start a new Codex session, then run `$cc-setup`. The setup skill verifies Claude Code and offers to install the plugin's pinned local SDK dependency if needed. It never performs Claude authentication for you.
 
-See [the human installation guide](docs/INSTALL.md) for prerequisites, updating, uninstalling, and troubleshooting. Agents installing this plugin into Codex should follow [the agent installation contract](docs/INSTALL_AGENT.md).
+See [the human installation guide](docs/INSTALL.md) for prerequisites, updating, uninstalling, and troubleshooting. The fetched agent procedure is maintained in [the agent installation contract](docs/INSTALL_AGENT.md).
 
 ## Requirements
 

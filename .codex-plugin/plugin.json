@@ -1,0 +1,24 @@
+{
+  "name": "claude-code-for-codex",
+  "version": "0.1.0",
+  "description": "Use a locally installed Claude Code runtime from Codex for reviews, delegated tasks, and resumable second opinions.",
+  "author": {
+    "name": "khankaholic",
+    "url": "https://github.com/khankaholic"
+  },
+  "repository": "https://github.com/khankaholic/claude-code-for-codex",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Claude Code for Codex",
+    "shortDescription": "Run Claude Code reviews and delegated tasks from Codex.",
+    "longDescription": "Use your local Claude Code installation from Codex with model selection, resumable jobs, interactive question handling, and estimated usage tracking.",
+    "developerName": "khankaholic",
+    "category": "Developer Tools",
+    "capabilities": ["Read", "Write", "Interactive"],
+    "defaultPrompt": [
+      "Ask Claude Code to review my current changes.",
+      "Delegate this implementation task to Claude Code.",
+      "Show my recent Claude Code jobs and usage."
+    ]
+  }
+}

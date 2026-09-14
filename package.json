@@ -1,0 +1,15 @@
+{
+  "name": "claude-code-for-codex",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Use Claude Code from Codex through a local companion runtime.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "setup": "node scripts/cc-companion.mjs setup",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "0.3.270"
+  }
+}

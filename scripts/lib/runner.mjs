@@ -1,5 +1,7 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
+import { DELEGATION_REPORT_SCHEMA, renderDelegationReport } from "./report.mjs";
+
 function profileFor(job) {
   const ask = "AskUserQuestion";
   if (job.kind !== "rescue" || !job.write) {
@@ -15,26 +17,49 @@ function profileFor(job) {
 }
 
 function promptFor(job) {
+  const authorization = job.kind === "rescue" && job.write
+    ? "Implementation is authorized only for files required by the objective."
+    : "Read-only. Do not edit, create, rename, or delete files.";
+  const assignment = [
+    "You are completing a bounded assignment delegated by Codex.",
+    `Repository: ${job.cwd}`,
+    `Objective: ${job.prompt}`,
+    `Authorization: ${authorization}`,
+    "Preserve all unrelated and pre-existing work. Do not commit, push, publish, deploy, install dependencies, or access unrelated external systems.",
+    "Read applicable AGENTS.md or CLAUDE.md instructions before acting. Inspect only the context needed for this objective.",
+    "Run only checks that are already implied by the objective and available permissions. Report actual outcomes; do not claim an unobserved success.",
+    "Return the requested structured report. List unexpected changes and unfinished work explicitly."
+  ].join("\n");
   if (job.kind === "review") {
     return [
       "Review the current repository changes. Report only actionable correctness, safety, reliability, or maintainability findings.",
       "Do not edit files. Cite file paths and line numbers. If there are no findings, say so clearly.",
-      job.prompt
+      assignment
     ].filter(Boolean).join("\n\n");
   }
   if (job.kind === "adversarial-review") {
     return [
       "Perform an adversarial read-only review. Challenge assumptions, architecture, tradeoffs, and failure modes.",
       "Do not edit files. Separate concrete defects from design questions and cite evidence.",
-      job.prompt
+      assignment
     ].filter(Boolean).join("\n\n");
   }
-  return job.prompt;
+  return assignment;
 }
 
 function answersMatch(job, questions) {
   const answers = job.pendingAnswers;
   return Boolean(answers && questions.every((question) => Object.hasOwn(answers, question.question)));
+}
+
+export function resumePrompt(job) {
+  const answers = JSON.stringify(job.pendingAnswers ?? {});
+  return [
+    "Continue the original task from the deferred question.",
+    `The user supplied these answers: ${answers}`,
+    "Treat those values as the user's answer to the pending question. Do not ask the same question again.",
+    "Finish the original task within its existing authorization boundary and return the requested structured report."
+  ].join("\n");
 }
 
 function costRecord(message) {
@@ -51,6 +76,7 @@ function costRecord(message) {
 
 export async function executeClaudeJob(job, onUpdate = () => {}) {
   const profile = profileFor(job);
+  const answersIncludedInPrompt = Boolean(job.sessionId && job.pendingAnswers);
   let init = null;
   let finalResult = null;
   let pendingAnswersConsumed = false;
@@ -76,7 +102,7 @@ export async function executeClaudeJob(job, onUpdate = () => {}) {
 
   const stream = query({
     prompt: job.sessionId
-      ? "Continue from the deferred question using the supplied answer, then finish the original task."
+      ? resumePrompt(job)
       : promptFor(job),
     options: {
       cwd: job.cwd,
@@ -87,10 +113,23 @@ export async function executeClaudeJob(job, onUpdate = () => {}) {
       permissionMode: profile.permissionMode,
       permissionPrompts: "host",
       settingSources: [],
-      canUseTool: async (toolName) => ({
-        behavior: "deny",
-        message: `${toolName} was not approved by the Codex companion policy.`
-      }),
+      mcpServers: {},
+      strictMcpConfig: true,
+      extraArgs: { restricted: null },
+      outputFormat: { type: "json_schema", schema: DELEGATION_REPORT_SCHEMA },
+      canUseTool: async (toolName, input) => {
+        if (toolName === ask && answersMatch(job, input?.questions ?? [])) {
+          pendingAnswersConsumed = true;
+          return {
+            behavior: "allow",
+            updatedInput: { questions: input.questions, answers: job.pendingAnswers }
+          };
+        }
+        return {
+          behavior: "deny",
+          message: `${toolName} was not approved by the Codex companion policy.`
+        };
+      },
       hooks: { PreToolUse: [{ matcher: "^AskUserQuestion$", hooks: [askUserHook] }] }
     }
   });
@@ -125,7 +164,7 @@ export async function executeClaudeJob(job, onUpdate = () => {}) {
     progress: [...(job.progress ?? []), ...progress],
     runs: [...(job.runs ?? []), run],
     estimatedCostUsd: Number(job.estimatedCostUsd ?? 0) + run.estimatedCostUsd,
-    pendingAnswers: pendingAnswersConsumed ? null : job.pendingAnswers ?? null,
+    pendingAnswers: pendingAnswersConsumed || answersIncludedInPrompt ? null : job.pendingAnswers ?? null,
     permissionDenials: finalResult.permission_denials ?? [],
     stopReason: finalResult.stop_reason ?? null,
     terminalReason: finalResult.terminal_reason ?? null
@@ -143,12 +182,22 @@ export async function executeClaudeJob(job, onUpdate = () => {}) {
   }
 
   const successful = finalResult.subtype === "success" && !finalResult.is_error;
+  const structuredResult = finalResult.structured_output ?? null;
+  const structuredFailure = finalResult.subtype === "error_max_structured_output_retries";
   return {
     ...base,
     status: successful ? "completed" : "failed",
     phase: successful ? "completed" : "failed",
     pendingQuestion: null,
-    result: finalResult.result ?? "",
-    error: successful ? null : finalResult.subtype ?? "Claude execution failed"
+    structuredResult,
+    delegatedStatus: structuredResult?.status ?? null,
+    rawResult: finalResult.result ?? "",
+    result: structuredResult ? renderDelegationReport(structuredResult) : finalResult.result ?? "",
+    requiresVerification: Boolean(job.write && (!successful || structuredResult?.status !== "complete")),
+    error: successful
+      ? null
+      : structuredFailure && job.write
+        ? "Claude exhausted structured-output retries. File edits may still exist; inspect the working tree before retrying."
+        : finalResult.subtype ?? "Claude execution failed"
   };
 }

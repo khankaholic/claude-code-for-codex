@@ -12,6 +12,8 @@ Early plugin release. The companion runtime supports:
 - read-only or write-capable rescue work
 - model and effort selection
 - deferred `AskUserQuestion` handling and exact-session resume
+- structured results with changed files, checks, findings, and unfinished work
+- restricted execution with ambient MCP servers disabled
 - status, result, cancellation, and estimated usage reporting
 
 ## Installation

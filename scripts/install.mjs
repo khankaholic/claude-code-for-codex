@@ -5,6 +5,13 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
+import {
+  detectClaudeFeatures,
+  hasRequiredClaudeFeatures,
+  isClaudeVersionSupported,
+  MINIMUM_CLAUDE_VERSION
+} from "./lib/version.mjs";
+
 const pluginRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const args = new Set(process.argv.slice(2));
 const json = args.has("--json");
@@ -44,9 +51,24 @@ function clean(value) {
   return value?.trim() || null;
 }
 
+function nextActionFor({ nodeSupported, claudeAvailable, claudeSupported, featuresSupported, sdkAvailable, loggedIn }) {
+  if (!nodeSupported) return "Install Node.js 20 or later.";
+  if (!claudeAvailable) return "Install Claude Code using Anthropic's official instructions.";
+  if (!claudeSupported) return `Upgrade Claude Code to ${MINIMUM_CLAUDE_VERSION} or later.`;
+  if (!featuresSupported) return "Upgrade Claude Code; required restricted-execution flags are unavailable.";
+  if (!sdkAvailable) return "Run this script with --install to install the pinned plugin dependency.";
+  if (!loggedIn) return "Run claude auth login yourself, then repeat the check.";
+  return "Start a new Codex session and use a $cc-* skill.";
+}
+
 async function inspect() {
   const nodeMajor = Number(process.versions.node.split(".")[0]);
   const claudeResult = command("claude", ["--version"]);
+  const claudeVersion = clean(claudeResult.stdout);
+  const claudeAvailable = !claudeResult.error && claudeResult.status === 0;
+  const claudeSupported = claudeAvailable && isClaudeVersionSupported(claudeVersion);
+  const features = detectClaudeFeatures(claudeAvailable ? command("claude", ["--help"]).stdout : "");
+  const featuresSupported = hasRequiredClaudeFeatures(features);
   const authResult = command("claude", ["auth", "status", "--json"]);
   let loggedIn = false;
   if (!authResult.error && authResult.status === 0) {
@@ -65,25 +87,21 @@ async function inspect() {
     sdkAvailable = false;
   }
 
+  const nodeSupported = nodeMajor >= 20;
   return {
-    ready: nodeMajor >= 20 && !claudeResult.error && claudeResult.status === 0 && sdkAvailable && loggedIn,
+    ready: nodeSupported && claudeSupported && featuresSupported && sdkAvailable && loggedIn,
     pluginRoot,
-    node: { supported: nodeMajor >= 20, version: process.version },
+    node: { supported: nodeSupported, version: process.version },
     claude: {
-      available: !claudeResult.error && claudeResult.status === 0,
-      version: clean(claudeResult.stdout)
+      available: claudeAvailable,
+      version: claudeVersion,
+      supported: claudeSupported,
+      minimumVersion: MINIMUM_CLAUDE_VERSION
     },
+    features,
     agentSdk: { available: sdkAvailable, version: "0.3.270" },
     auth: { loggedIn },
-    nextAction: nodeMajor < 20
-      ? "Install Node.js 20 or later."
-      : claudeResult.error || claudeResult.status !== 0
-        ? "Install Claude Code using Anthropic's official instructions."
-        : !sdkAvailable
-          ? "Run this script with --install to install the pinned plugin dependency."
-          : !loggedIn
-            ? "Run claude auth login yourself, then repeat the check."
-            : "Start a new Codex session and use a $cc-* skill."
+    nextAction: nextActionFor({ nodeSupported, claudeAvailable, claudeSupported, featuresSupported, sdkAvailable, loggedIn })
   };
 }
 
@@ -95,7 +113,7 @@ function print(report) {
   process.stdout.write([
     `Ready: ${report.ready ? "yes" : "no"}`,
     `Node.js: ${report.node.version}${report.node.supported ? "" : " (requires 20 or later)"}`,
-    `Claude Code: ${report.claude.version ?? "not found"}`,
+    `Claude Code: ${report.claude.version ?? "not found"}${report.claude.available && !report.claude.supported ? ` (requires ${MINIMUM_CLAUDE_VERSION} or later)` : ""}`,
     `Claude Agent SDK: ${report.agentSdk.available ? report.agentSdk.version : "not installed"}`,
     `Authentication: ${report.auth.loggedIn ? "ready" : "action required"}`,
     `Next: ${report.nextAction}`

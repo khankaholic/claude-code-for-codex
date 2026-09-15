@@ -7,6 +7,12 @@ import { fileURLToPath } from "node:url";
 
 import { parseArgs, parseFriendlyTask } from "./lib/args.mjs";
 import { createJobId, listJobs, loadJob, resolveWorkspace, saveJob } from "./lib/state.mjs";
+import {
+  detectClaudeFeatures,
+  hasRequiredClaudeFeatures,
+  isClaudeVersionSupported,
+  MINIMUM_CLAUDE_VERSION
+} from "./lib/version.mjs";
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const VALID_EFFORTS = new Set(["low", "medium", "high", "xhigh", "max"]);
@@ -47,6 +53,8 @@ function commandStatus(command, args) {
 async function handleSetup(argv) {
   const { options } = parseArgs(argv);
   const claude = commandStatus("claude", ["--version"]);
+  const claudeHelp = commandStatus("claude", ["--help"]);
+  const features = detectClaudeFeatures(claudeHelp.stdout);
   const authRaw = commandStatus("claude", ["auth", "status", "--json"]);
   let auth = { loggedIn: false, authMethod: null, subscriptionType: null, apiProvider: null };
   if (authRaw.available) {
@@ -66,9 +74,15 @@ async function handleSetup(argv) {
     sdkAvailable = false;
   }
   const report = {
-    ready: claude.available && auth.loggedIn && sdkAvailable,
+    ready: claude.available && isClaudeVersionSupported(claude.stdout) && hasRequiredClaudeFeatures(features) && auth.loggedIn && sdkAvailable,
     node: process.version,
-    claude: { available: claude.available, version: claude.stdout || null },
+    claude: {
+      available: claude.available,
+      version: claude.stdout || null,
+      supported: isClaudeVersionSupported(claude.stdout),
+      minimumVersion: MINIMUM_CLAUDE_VERSION
+    },
+    features,
     auth,
     agentSdk: { available: sdkAvailable, version: "0.3.270" },
     budgetCeiling: null,
@@ -77,7 +91,7 @@ async function handleSetup(argv) {
   output(options.json ? report : [
     `Ready: ${report.ready ? "yes" : "no"}`,
     `Node: ${report.node}`,
-    `Claude: ${report.claude.version ?? "not found"}`,
+    `Claude: ${report.claude.version ?? "not found"}${report.claude.available && !report.claude.supported ? ` (requires ${MINIMUM_CLAUDE_VERSION} or later)` : ""}`,
     `Authentication: ${auth.loggedIn ? `${auth.authMethod} (${auth.subscriptionType ?? "unknown plan"})` : "not logged in"}`,
     `Claude Agent SDK: ${sdkAvailable ? "0.3.270" : "not installed; run npm install in the plugin root"}`,
     "Budget ceiling: none",
@@ -142,6 +156,15 @@ async function handleTask(argv) {
   const { options, positionals } = parseArgs(argv);
   const cwd = path.resolve(options.cwd ?? process.cwd());
   const kind = validateTaskOptions(options);
+  const claude = commandStatus("claude", ["--version"]);
+  if (!claude.available) throw new Error("Claude Code is not available. Run $cc-setup.");
+  if (!isClaudeVersionSupported(claude.stdout)) {
+    throw new Error(`Claude Code ${MINIMUM_CLAUDE_VERSION} or later is required. Run $cc-setup.`);
+  }
+  const features = detectClaudeFeatures(commandStatus("claude", ["--help"]).stdout);
+  if (!hasRequiredClaudeFeatures(features)) {
+    throw new Error("Claude Code is missing a required restricted-execution feature. Run $cc-setup.");
+  }
   const friendly = parseFriendlyTask(positionals.join(" "));
   const prompt = friendly.prompt.trim();
   if (!prompt) throw new Error("Provide a task after `--`.");

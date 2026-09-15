@@ -47,7 +47,7 @@ test("every skill has matching frontmatter and no placeholders", () => {
   for (const folder of fs.readdirSync(skillsRoot)) {
     const file = path.join(skillsRoot, folder, "SKILL.md");
     assert.ok(fs.existsSync(file), `${folder} must contain SKILL.md`);
-    const content = fs.readFileSync(file, "utf8");
+    const content = fs.readFileSync(file, "utf8").replaceAll("\r\n", "\n");
     assert.match(content, new RegExp(`^---\\nname: ${folder}\\n`, "m"));
     assert.doesNotMatch(content, /\[TODO:/);
   }

@@ -55,6 +55,15 @@ From a repository you are comfortable sharing with Claude Code, start with a rea
 $cc-review sonnet high - review my current changes
 ```
 
+For the strongest Opus model, use `opus` to follow Claude Code's latest Opus alias or pin the current release explicitly:
+
+```text
+$cc-review opus-5-5 high - review my current changes
+$cc-adversarial-review opus-5-5 xhigh - challenge this design
+```
+
+Both `opus-5-5` and the exact model ID `claude-opus-5-5` select Claude Opus 5.5.
+
 ## Update
 
 Refresh the marketplace snapshot and reinstall the plugin:

@@ -62,7 +62,7 @@ npm run setup
 ```text
 $cc-setup
 $cc-review sonnet high - review my current changes
-$cc-adversarial-review opus xhigh - challenge the retry design
+$cc-adversarial-review opus-5-5 xhigh - challenge the retry design
 $cc-rescue sonnet high - implement ABC
 $cc-answer <job-id> <answer>
 $cc-status
@@ -71,7 +71,7 @@ $cc-cancel <job-id>
 $cc-usage
 ```
 
-The friendly syntax is `$cc-rescue [model] [effort] - task`. Models may be aliases such as `sonnet`, `opus`, and `haiku`, friendly version names such as `sonnet-5`, or an exact Claude model ID. Effort may be `low`, `medium`, `high`, `xhigh`, or `max`. Missing values use the skill defaults.
+The friendly syntax is `$cc-rescue [model] [effort] - task`. Use `opus` for Anthropic's latest Opus alias (currently Opus 5.5), or `opus-5-5` to pin that release explicitly. Other accepted forms include aliases such as `sonnet` and `haiku`, friendly version names such as `sonnet-5`, and exact Claude model IDs such as `claude-opus-5-5`. Effort may be `low`, `medium`, `high`, `xhigh`, or `max`. Missing values use the skill defaults; adversarial review defaults to the latest `opus` alias at `xhigh` effort.
 
 ## Cost semantics
 

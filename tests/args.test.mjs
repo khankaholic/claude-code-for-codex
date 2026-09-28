@@ -31,6 +31,10 @@ test("expands friendly versioned model names", () => {
   assert.deepEqual(parseFriendlyTask("sonnet-5 high - implement ABC"), {
     model: "claude-sonnet-5", effort: "high", prompt: "implement ABC"
   });
+
+  assert.deepEqual(parseFriendlyTask("opus-5-5 xhigh - investigate the race"), {
+    model: "claude-opus-5-5", effort: "xhigh", prompt: "investigate the race"
+  });
 });
 
 test("keeps passthrough task tokens", () => {

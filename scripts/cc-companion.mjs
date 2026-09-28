@@ -84,7 +84,7 @@ async function handleSetup(argv) {
     },
     features,
     auth,
-    agentSdk: { available: sdkAvailable, version: "0.3.270" },
+    agentSdk: { available: sdkAvailable, version: "0.3.283" },
     budgetCeiling: null,
     costCapture: true
   };
@@ -93,7 +93,7 @@ async function handleSetup(argv) {
     `Node: ${report.node}`,
     `Claude: ${report.claude.version ?? "not found"}${report.claude.available && !report.claude.supported ? ` (requires ${MINIMUM_CLAUDE_VERSION} or later)` : ""}`,
     `Authentication: ${auth.loggedIn ? `${auth.authMethod} (${auth.subscriptionType ?? "unknown plan"})` : "not logged in"}`,
-    `Claude Agent SDK: ${sdkAvailable ? "0.3.270" : "not installed; run npm install in the plugin root"}`,
+    `Claude Agent SDK: ${sdkAvailable ? "0.3.283" : "not installed; run npm install in the plugin root"}`,
     "Budget ceiling: none",
     "Estimated usage capture: enabled"
   ].join("\n"), options.json);

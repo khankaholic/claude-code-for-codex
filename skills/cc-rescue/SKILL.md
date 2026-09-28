@@ -15,7 +15,7 @@ node <plugin-root>/scripts/cc-companion.mjs task --kind rescue [--write] [--back
 
 Routing rules:
 
-- Preserve friendly prefixes such as `sonnet high - implement ABC` or `opus-xhigh - investigate the race`; the companion parses them.
+- Preserve friendly prefixes such as `sonnet high - implement ABC` or `opus-5-5 xhigh - investigate the race`; the companion parses them. `opus` selects Anthropic's latest Opus alias, while `opus-5-5` pins Claude Opus 5.5 explicitly.
 - Add `--write` only when the user asks Claude to implement, fix, change, create, or otherwise modify files. Diagnosis, research, planning, and explanation stay read-only.
 - Add `--background` only when the user explicitly requests it. Background writes are intentionally rejected until isolated worktrees are implemented.
 - Return Claude's result faithfully. Do not add a second implementation.

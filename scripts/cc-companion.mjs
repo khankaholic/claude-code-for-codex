@@ -6,6 +6,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import { parseArgs, parseFriendlyTask } from "./lib/args.mjs";
+import { resolveModelSelection } from "./lib/model-policy.mjs";
 import { createJobId, listJobs, loadJob, resolveWorkspace, saveJob } from "./lib/state.mjs";
 import {
   detectClaudeFeatures,
@@ -17,11 +18,6 @@ import {
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const VALID_EFFORTS = new Set(["low", "medium", "high", "xhigh", "max"]);
 const VALID_KINDS = new Set(["rescue", "review", "adversarial-review"]);
-const DEFAULTS = {
-  rescue: { model: "sonnet", effort: "high" },
-  review: { model: "sonnet", effort: "high" },
-  "adversarial-review": { model: "opus", effort: "xhigh" }
-};
 
 function output(value, json = false) {
   process.stdout.write(json ? `${JSON.stringify(value, null, 2)}\n` : `${value}\n`);
@@ -168,12 +164,19 @@ async function handleTask(argv) {
   const friendly = parseFriendlyTask(positionals.join(" "));
   const prompt = friendly.prompt.trim();
   if (!prompt) throw new Error("Provide a task after `--`.");
-  const model = options.model ?? friendly.model ?? DEFAULTS[kind].model;
-  const effort = (options.effort ?? friendly.effort ?? DEFAULTS[kind].effort).toLowerCase();
+  const selection = resolveModelSelection({
+    kind,
+    prompt,
+    write: Boolean(options.write),
+    model: options.model ?? friendly.model,
+    effort: options.effort ?? friendly.effort
+  });
+  const model = selection.model;
+  const effort = selection.effort.toLowerCase();
   if (!VALID_EFFORTS.has(effort)) throw new Error(`Unsupported effort: ${effort}`);
   const job = saveJob(cwd, {
     id: createJobId(), cwd: resolveWorkspace(cwd), kind, prompt,
-    model, effort,
+    model, effort, modelSelection: selection.modelSelection,
     write: Boolean(options.write), status: options.background ? "queued" : "running",
     phase: options.background ? "queued" : "starting", runs: [], estimatedCostUsd: 0
   });

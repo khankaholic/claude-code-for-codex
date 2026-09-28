@@ -11,4 +11,4 @@ Forward the request to the companion rather than reviewing the code yourself. Re
 node <plugin-root>/scripts/cc-companion.mjs task --kind review -- "<request text>"
 ```
 
-The request may begin with a friendly model and effort prefix, such as `opus-5-5 high - review against main`; preserve it unchanged because the companion parses it. `opus` selects Anthropic's latest Opus alias, while `opus-5-5` pins Claude Opus 5.5 explicitly. Add `--background` only when the user explicitly requests background execution. Review is always read-only. Return the companion output faithfully.
+The request may begin with a friendly model and effort prefix, such as `opus-5-5 high - review against main`; preserve it unchanged because the companion parses it. An explicit choice wins; otherwise reviews default to the latest `opus` alias at `medium` effort, rising to `high` when the request calls for deeper reasoning or careful, thorough checking. Add `--background` only when the user explicitly requests background execution. Review is always read-only. Return the companion output faithfully.

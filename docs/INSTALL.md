@@ -52,17 +52,24 @@ Then start or continue a Codex session and run `$cc-setup` again.
 From a repository you are comfortable sharing with Claude Code, start with a read-only request:
 
 ```text
-$cc-review sonnet high - review my current changes
+$cc-review review my current changes
 ```
 
 For the strongest Opus model, use `opus` to follow Claude Code's latest Opus alias or pin the current release explicitly:
 
 ```text
 $cc-review opus-5-5 high - review my current changes
-$cc-adversarial-review opus-5-5 xhigh - challenge this design
+$cc-adversarial-review opus-5-5 high - challenge this design
 ```
 
 Both `opus-5-5` and the exact model ID `claude-opus-5-5` select Claude Opus 5.5.
+
+When you omit the model, the companion applies this policy:
+
+- Opus for planning, brainstorming, architecture, design, strategy, investigation, diagnosis, research, reviews, and other judgment-heavy work.
+- Sonnet for ordinary implementation, implementation of an already accepted design, and explicitly simple work.
+- Medium effort by default; high effort when the request calls for deeper reasoning or careful, thorough checking. Adversarial review also defaults to high.
+- An explicit model or effort prefix always overrides the automatic choice.
 
 ## Update
 

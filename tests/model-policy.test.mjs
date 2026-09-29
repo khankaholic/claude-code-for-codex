@@ -25,13 +25,13 @@ test("uses Opus when deep design work is part of an implementation", () => {
 test("uses Sonnet for ordinary implementation and explicitly simple work", () => {
   assert.deepEqual(
     selectDefaultModel({ kind: "rescue", prompt: "implement the endpoint", write: true }),
-    { model: "sonnet", effort: "medium", reason: "implementation" }
+    { model: "claude-sonnet-5-5", effort: "medium", reason: "implementation" }
   );
   assert.deepEqual(
     selectDefaultModel({ kind: "rescue", prompt: "implement the accepted specification", write: true }),
-    { model: "sonnet", effort: "medium", reason: "implementation of an accepted design" }
+    { model: "claude-sonnet-5-5", effort: "medium", reason: "implementation of an accepted design" }
   );
-  assert.equal(selectDefaultModel({ kind: "rescue", prompt: "quickly explain this helper" }).model, "sonnet");
+  assert.equal(selectDefaultModel({ kind: "rescue", prompt: "quickly explain this helper" }).model, "claude-sonnet-5-5");
 });
 
 test("uses Opus for reviews, adversarial reviews, and unclassified read-only work", () => {
@@ -61,6 +61,17 @@ test("explicit model and effort choices override the routing policy", () => {
       model: "sonnet",
       effort: "low"
     }),
-    { model: "sonnet", effort: "low", modelSelection: "explicit" }
+    { model: "claude-sonnet-5-5", effort: "low", modelSelection: "explicit" }
+  );
+});
+
+test("keeps exact Sonnet choices while mapping the friendly alias to Sonnet 5.5", () => {
+  assert.equal(
+    resolveModelSelection({ kind: "rescue", prompt: "implement it", write: true, model: "sonnet" }).model,
+    "claude-sonnet-5-5"
+  );
+  assert.equal(
+    resolveModelSelection({ kind: "rescue", prompt: "implement it", write: true, model: "claude-sonnet-5" }).model,
+    "claude-sonnet-5"
   );
 });

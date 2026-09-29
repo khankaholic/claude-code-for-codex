@@ -99,7 +99,7 @@ async function inspect() {
       minimumVersion: MINIMUM_CLAUDE_VERSION
     },
     features,
-    agentSdk: { available: sdkAvailable, version: "0.3.283" },
+    agentSdk: { available: sdkAvailable, version: "0.3.284" },
     auth: { loggedIn },
     nextAction: nextActionFor({ nodeSupported, claudeAvailable, claudeSupported, featuresSupported, sdkAvailable, loggedIn })
   };

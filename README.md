@@ -64,6 +64,7 @@ $cc-setup
 $cc-review review my current changes
 $cc-adversarial-review opus-5-5 high - challenge the retry design
 $cc-rescue implement ABC
+$cc-rescue sonnet-5-5 medium - implement ABC
 $cc-answer <job-id> <answer>
 $cc-status
 $cc-result <job-id>
@@ -71,14 +72,14 @@ $cc-cancel <job-id>
 $cc-usage
 ```
 
-The friendly syntax is `$cc-rescue [model] [effort] - task`. You normally do not need to choose a model: planning, brainstorming, architecture, investigation, review, and other judgment-heavy work use the latest `opus` alias; ordinary implementation and explicitly simple work use `sonnet`. Automatic effort defaults to `medium` and rises to `high` when the request asks for deeper reasoning or careful, thorough checking. Adversarial review also uses `high`. Explicit choices always win. Use `opus-5-5` to pin Claude Opus 5.5, or provide another alias, friendly version name, or exact Claude model ID. Effort may be `low`, `medium`, `high`, `xhigh`, or `max`.
+The friendly syntax is `$cc-rescue [model] [effort] - task`. You normally do not need to choose a model: planning, brainstorming, architecture, investigation, review, and other judgment-heavy work use the latest `opus` alias; ordinary implementation and explicitly simple work use Claude Sonnet 5.5. Automatic effort defaults to `medium` and rises to `high` when the request asks for deeper reasoning or careful, thorough checking. Adversarial review also uses `high`. Explicit choices always win. `sonnet`, `sonnet-5-5`, and `claude-sonnet-5-5` select Claude Sonnet 5.5; use `opus-5-5` to pin Claude Opus 5.5. You may also provide another friendly version name or exact Claude model ID. Effort may be `low`, `medium`, `high`, `xhigh`, or `max`.
 
 Examples:
 
 ```text
 $cc-rescue brainstorm migration approaches          # opus medium
 $cc-rescue carefully design the new boundary        # opus high
-$cc-rescue implement the accepted change            # sonnet medium
+$cc-rescue implement the accepted change            # sonnet 5.5 medium
 $cc-review thoroughly review my current changes     # opus high
 ```
 

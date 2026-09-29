@@ -64,10 +64,18 @@ $cc-adversarial-review opus-5-5 high - challenge this design
 
 Both `opus-5-5` and the exact model ID `claude-opus-5-5` select Claude Opus 5.5.
 
+For implementation work, `sonnet` now selects Claude Sonnet 5.5 explicitly. These forms are equivalent:
+
+```text
+$cc-rescue sonnet medium - implement the endpoint
+$cc-rescue sonnet-5-5 medium - implement the endpoint
+$cc-rescue claude-sonnet-5-5 medium - implement the endpoint
+```
+
 When you omit the model, the companion applies this policy:
 
 - Opus for planning, brainstorming, architecture, design, strategy, investigation, diagnosis, research, reviews, and other judgment-heavy work.
-- Sonnet for ordinary implementation, implementation of an already accepted design, and explicitly simple work.
+- Claude Sonnet 5.5 for ordinary implementation, implementation of an already accepted design, and explicitly simple work.
 - Medium effort by default; high effort when the request calls for deeper reasoning or careful, thorough checking. Adversarial review also defaults to high.
 - An explicit model or effort prefix always overrides the automatic choice.
 

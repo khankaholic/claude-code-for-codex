@@ -2,6 +2,7 @@ const DEEP_WORK = /\b(?:plan|planning|brainstorm|brainstorming|architect|archite
 const ACCEPTED_DESIGN = /\b(?:accepted|approved|finalized|agreed)\s+(?:plan|design|architecture|proposal|specification)\b/i;
 const SIMPLE_WORK = /\b(?:simple|straightforward|small|minor|trivial|quick|quickly)\b/i;
 const HIGH_EFFORT = /\b(?:careful|carefully|thorough|thoroughly|deep|deeply|complex|critical|high[ -]?stakes|rigorous|rigorously|exhaustive|exhaustively|meticulous|meticulously|double[ -]?check)\b/i;
+const DEFAULT_SONNET_MODEL = "claude-sonnet-5-5";
 
 function automaticEffort(kind, text) {
   if (kind === "adversarial-review" || HIGH_EFFORT.test(text)) return "high";
@@ -19,16 +20,16 @@ export function selectDefaultModel({ kind, prompt, write = false }) {
     return { model: "opus", effort, reason: "code review and analysis" };
   }
   if (write && ACCEPTED_DESIGN.test(text)) {
-    return { model: "sonnet", effort, reason: "implementation of an accepted design" };
+    return { model: DEFAULT_SONNET_MODEL, effort, reason: "implementation of an accepted design" };
   }
   if (DEEP_WORK.test(text)) {
     return { model: "opus", effort, reason: "planning or deep analysis" };
   }
   if (write) {
-    return { model: "sonnet", effort, reason: "implementation" };
+    return { model: DEFAULT_SONNET_MODEL, effort, reason: "implementation" };
   }
   if (SIMPLE_WORK.test(text)) {
-    return { model: "sonnet", effort, reason: "explicitly simple work" };
+    return { model: DEFAULT_SONNET_MODEL, effort, reason: "explicitly simple work" };
   }
   return { model: "opus", effort, reason: "judgment-heavy or unclassified work" };
 }
@@ -36,7 +37,7 @@ export function selectDefaultModel({ kind, prompt, write = false }) {
 export function resolveModelSelection({ kind, prompt, write = false, model = null, effort = null }) {
   const policy = selectDefaultModel({ kind, prompt, write });
   return {
-    model: model ?? policy.model,
+    model: model === "sonnet" ? DEFAULT_SONNET_MODEL : model ?? policy.model,
     effort: effort ?? policy.effort,
     modelSelection: model ? "explicit" : policy.reason
   };
